@@ -1,0 +1,2 @@
+# CommentDetoxifier
+The Comment Detoxifier is designed to detect and neutralize harmful online comments. It automatically identifies hateful, abusive, or threatening speech and transforms it into socially acceptable — without losing the original context.
