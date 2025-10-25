@@ -8,7 +8,7 @@ class CommentDataset(Dataset):
     data: pd.DataFrame
     """
     def __init__(self, data, tokenizer_name="bert-base-uncased", max_length=128):
-        self.data: pd.DataFrame = data
+        self.data: pd.DataFrame = data.reset_index(drop=True)
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
         self.max_length = max_length
 
