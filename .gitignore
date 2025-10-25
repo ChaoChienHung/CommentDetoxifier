@@ -3,3 +3,6 @@ data/test_labels.csv
 data/train.csv
 data/test.csv
 wandb
+__pycache__/dataset.cpython-311.pyc
+data/.DS_Store
+.DS_Store
