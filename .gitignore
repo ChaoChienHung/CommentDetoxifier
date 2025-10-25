@@ -13,3 +13,7 @@ train/wandb/run-20240918_180757-185cszcd/logs/debug-internal.log
 /models/hugggingface/model
 /models/hugggingface/model
 /models/huggingface/model/models--unitary--toxic-bert
+/venv
+data/test_labels.csv
+data/train.csv
+data/test.csv
