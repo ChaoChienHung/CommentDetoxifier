@@ -1,4 +1,3 @@
-import os
 import wandb
 import torch
 import datetime
@@ -15,6 +14,9 @@ from transformers import (
     BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments,
     EarlyStoppingCallback, get_linear_schedule_with_warmup
 )
+
+# Debugging
+# raise SystemExit("Debugging complete.")
 
 # Load full dataset
 data = pd.read_csv("data/train.csv")
@@ -44,13 +46,13 @@ current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 # -----------------
 # W&B Setup
 # -----------------
-# wandb.init(project="ChatFilter-Multilingual-Bert", name=current_time)
-# wandb.config = {
-#     "learning_rate": learning_rate,
-#     "epochs": epochs,
-#     "batch_size_train": batch_size_train,
-#     "batch_size_eval": batch_size_eval
-# }
+wandb.init(project="CommentDetoxifier", name=current_time)
+wandb.config = {
+    "learning_rate": learning_rate,
+    "epochs": epochs,
+    "batch_size_train": batch_size_train,
+    "batch_size_eval": batch_size_eval
+}
 
 # -----------------
 # Device Setup 
@@ -75,9 +77,12 @@ training_args = TrainingArguments(
     num_train_epochs=epochs,
     per_device_train_batch_size=batch_size_train,
     per_device_eval_batch_size=batch_size_eval,
-    evaluation_strategy="epoch",
+    eval_strategy="epoch",
     save_strategy="epoch",
-    logging_steps=10
+    logging_steps=10,
+    load_best_model_at_end=True,  # optional but recommended with early stopping
+    metric_for_best_model="f1",   
+    greater_is_better=True        # True if higher metric is better
 )
 
 def compute_metrics(pred):
