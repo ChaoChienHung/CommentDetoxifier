@@ -3,7 +3,7 @@ import torch
 import pandas as pd
 from torch.utils.data import Dataset
 from transformers import AutoTokenizer
-from config import MODEL, TOKENIZER_CACHE, DATA_CACHE
+from config import MODEL, TOKENIZER_CACHE
 
 class CommentDataset(Dataset):
     """

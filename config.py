@@ -1,5 +1,8 @@
+import os
 import torch
 import datetime
+from pydantic import BaseModel, Field
+from typing import List, Optional, Dict, Any, Union, Set, Literal
 
 # -----------------
 # Directories
@@ -31,7 +34,21 @@ BATCH_SIZE_TRAIN = 16
 # -----------------
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+# ----------
+# API Key
+# ----------
+API_KEY: str = os.environ.get("OPENAI_API_KEY")
+
 # -----------------
 # Timestamp
 # -----------------
 CURRENT_TIME = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+
+# ---------
+# Schema
+# ---------
+class LLMReply(BaseModel):
+    success: bool = Field(description="Indicates whether the LLM successfully processed the input.")
+    has_meaning: bool = Field(description="Indicates if the original comment contains meaningful content.")
+    error_message: str = Field(description="Detailed error message if processing failed; empty if successful.")
+    revised_comment: str = Field(description="The revised version of the comment, modified to be socially acceptable.")
