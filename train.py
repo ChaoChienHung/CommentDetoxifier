@@ -1,3 +1,4 @@
+import os
 import wandb
 import torch
 import datetime
@@ -5,9 +6,9 @@ import pandas as pd
 from tqdm import tqdm
 from torch.optim import AdamW
 from dataset import CommentDataset
-from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
+from globals import MODEL_CACHE, TOKENIZER_CACHE, DATA_CACHE, MODEL
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 
 from transformers import (
@@ -32,6 +33,10 @@ val_dataset = CommentDataset(data=val_df)
 
 # Create DataLoader
 train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
+
+os.makedirs(MODEL_CACHE, exist_ok=True)
+os.makedirs(TOKENIZER_CACHE, exist_ok=True)
+os.makedirs(DATA_CACHE, exist_ok=True)
 
 # -----------------
 # Hyperparameters
@@ -63,13 +68,13 @@ print(f"Training device: {device}")
 # -----------------
 # Tokenizer
 # -----------------
-tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+tokenizer = BertTokenizer.from_pretrained(MODEL, cache_dir=TOKENIZER_CACHE)
 
 # -----------------
 # Model Setup
 # -----------------
 model = BertForSequenceClassification.from_pretrained(
-    "bert-base-uncased", num_labels=6, problem_type="multi_label_classification"
+    MODEL, num_labels=6, problem_type="multi_label_classification", cache_dir=MODEL_CACHE
 ).to(device)
 
 training_args = TrainingArguments(
