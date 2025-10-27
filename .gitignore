@@ -7,3 +7,6 @@ __pycache__/dataset.cpython-311.pyc
 data/.DS_Store
 .DS_Store
 /cache
+/__pycache__
+/__pycache__
+*.pyc

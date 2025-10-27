@@ -3,7 +3,7 @@ import torch
 import pandas as pd
 from torch.utils.data import Dataset
 from transformers import AutoTokenizer
-from globals import MODEL_CACHE, TOKENIZER_CACHE, DATA_CACHE, MODEL
+from config import MODEL, TOKENIZER_CACHE, DATA_CACHE
 
 class CommentDataset(Dataset):
     """
@@ -24,7 +24,7 @@ class CommentDataset(Dataset):
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, cache_dir=TOKENIZER_CACHE)
 
         if cache_path and os.path.exists(cache_path):
-            print(f"🔹 Loading cached dataset from {cache_path}")
+            print(f"Loading cached dataset from {cache_path}")
             cached = torch.load(cache_path)
             self.encodings = cached["encodings"]
             self.labels = cached["labels"]

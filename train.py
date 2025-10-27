@@ -3,12 +3,12 @@ import wandb
 import torch
 import datetime
 import pandas as pd
+from config import *
 from tqdm import tqdm
 from torch.optim import AdamW
 from dataset import CommentDataset
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
-from globals import MODEL_CACHE, TOKENIZER_CACHE, DATA_CACHE, MODEL
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 
 from transformers import (
@@ -26,37 +26,27 @@ data = pd.read_csv("data/train.csv")
 train_df, val_df = train_test_split(data, test_size=0.1, random_state=42)
 
 # Train Dataset
-train_dataset = CommentDataset(data=train_df)
+train_dataset = CommentDataset(data=train_df, cache_path=f"{DATA_CACHE}/train_dataset.pt")
 
 # Validation Dataset
-val_dataset = CommentDataset(data=val_df)
+val_dataset = CommentDataset(data=val_df, cache_path=f"{DATA_CACHE}/val_dataset.pt")
 
 # Create DataLoader
 train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
 
+os.makedirs(DATA_CACHE, exist_ok=True)
 os.makedirs(MODEL_CACHE, exist_ok=True)
 os.makedirs(TOKENIZER_CACHE, exist_ok=True)
-os.makedirs(DATA_CACHE, exist_ok=True)
-
-# -----------------
-# Hyperparameters
-# -----------------
-learning_rate = 2e-6
-epochs = 10
-batch_size_train = 16
-batch_size_eval = 32
-
-current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
 # -----------------
 # W&B Setup
 # -----------------
-wandb.init(project="CommentDetoxifier", name=current_time)
+wandb.init(project="CommentDetoxifier", name=CURRENT_TIME)
 wandb.config = {
-    "learning_rate": learning_rate,
-    "epochs": epochs,
-    "batch_size_train": batch_size_train,
-    "batch_size_eval": batch_size_eval
+    "learning_rate": LEARNING_RATE,
+    "epochs": EPOCHS,
+    "batch_size_train": BATCH_SIZE_TRAIN,
+    "batch_size_eval": BATCH_SIZE_EVAL
 }
 
 # -----------------
@@ -78,10 +68,10 @@ model = BertForSequenceClassification.from_pretrained(
 ).to(device)
 
 training_args = TrainingArguments(
-    output_dir="./results",
-    num_train_epochs=epochs,
-    per_device_train_batch_size=batch_size_train,
-    per_device_eval_batch_size=batch_size_eval,
+    output_dir=f"{RESULTS_DIR}/{CURRENT_TIME}",
+    num_train_epochs=EPOCHS,
+    per_device_train_batch_size=BATCH_SIZE_TRAIN,
+    per_device_eval_batch_size=BATCH_SIZE_EVAL,
     eval_strategy="epoch",
     save_strategy="epoch",
     logging_steps=10,
