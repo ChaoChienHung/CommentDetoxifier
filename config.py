@@ -2,7 +2,6 @@ import os
 import torch
 import datetime
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any, Union, Set, Literal
 
 # -----------------
 # Directories
@@ -18,7 +17,7 @@ TOKENIZER_CACHE = f"{CACHE_DIR}/tokenizers"
 # -----------------
 MODEL = "bert-base-uncased"
 TOKENIZER = "bert-base-uncased"
-MODEL_PATH = f"{RESULTS_DIR}/20251027-123456"  # Best checkpoint folder
+MODEL_PATH = f"{RESULTS_DIR}/20251028-021857/checkpoint-35904"  # Best checkpoint folder
 
 # -----------------
 # Hyperparameters

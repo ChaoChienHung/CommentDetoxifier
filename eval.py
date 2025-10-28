@@ -9,9 +9,9 @@ from config import DATA_CACHE, TOKENIZER, DEVICE, THRESHOLD, BATCH_SIZE_EVAL, CA
 # ------------------------
 # LOAD MODEL & TOKENIZER
 # ------------------------
-print("-" * 30)
+print("-" * 38)
 print("🔹 Loading tokenizer and model...")
-print("-" * 30)
+print("-" * 38)
 tokenizer = BertTokenizer.from_pretrained(TOKENIZER, cache_dir=f"{CACHE_DIR}/tokenizers")
 model = BertForSequenceClassification.from_pretrained(MODEL_PATH, cache_dir=f"{CACHE_DIR}/models")
 model.to(DEVICE)
@@ -20,9 +20,9 @@ model.eval()
 # -----------------
 # LOAD TEST DATA
 # -----------------
-print("-" * 20)
+print("-" * 30)
 print("🔹 Loading test data...")
-print("-" * 20)
+print("-" * 30)
 test_data = pd.read_csv("data/test.csv")
 
 test_dataset = CommentDataset(
@@ -36,9 +36,9 @@ test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=BATCH_SIZE_EV
 # -----------------
 # INFERENCE LOOP
 # -----------------
-print("-" * 20)
+print("-" * 30)
 print("🔹 Running inference...")
-print("-" * 20)
+print("-" * 30)
 all_preds, all_labels = [], []
 
 with torch.no_grad():
