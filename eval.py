@@ -1,10 +1,11 @@
+import os
 import torch
 import numpy as np
 import pandas as pd
 from dataset import CommentDataset
 from transformers import BertTokenizer, BertForSequenceClassification
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from config import DATA_CACHE, TOKENIZER, DEVICE, THRESHOLD, BATCH_SIZE_EVAL, CACHE_DIR, MODEL_PATH
+from config import DATA_CACHE, TOKENIZER, DEVICE, THRESHOLD, BATCH_SIZE_EVAL, CACHE_DIR, MODEL_PATH, RESULTS_DIR, DATA_DIR
 
 # ------------------------
 # LOAD MODEL & TOKENIZER
@@ -12,8 +13,8 @@ from config import DATA_CACHE, TOKENIZER, DEVICE, THRESHOLD, BATCH_SIZE_EVAL, CA
 print("-" * 38)
 print("🔹 Loading tokenizer and model...")
 print("-" * 38)
-tokenizer = BertTokenizer.from_pretrained(TOKENIZER, cache_dir=f"{CACHE_DIR}/tokenizers")
-model = BertForSequenceClassification.from_pretrained(MODEL_PATH, cache_dir=f"{CACHE_DIR}/models")
+tokenizer = BertTokenizer.from_pretrained(TOKENIZER, cache_dir=os.path.join(CACHE_DIR, "tokenizers"))
+model = BertForSequenceClassification.from_pretrained(MODEL_PATH, cache_dir=os.path.join(CACHE_DIR, "models"))
 model.to(DEVICE)
 model.eval()
 
@@ -23,12 +24,12 @@ model.eval()
 print("-" * 30)
 print("🔹 Loading test data...")
 print("-" * 30)
-test_data = pd.read_csv("data/test.csv")
+test_data = pd.read_csv(os.path.join(DATA_DIR, "test.csv"))
 
 test_dataset = CommentDataset(
     data=test_data,
     tokenizer_name=TOKENIZER,
-    cache_path=f"{DATA_CACHE}/test_dataset.pt"
+    cache_path=os.path.join(DATA_CACHE, "test_dataset.pt")
 )
 
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=BATCH_SIZE_EVAL, shuffle=False)
@@ -84,6 +85,6 @@ output_df = test_data.copy()
 for i, col in enumerate(["toxic", "severe_toxic", "obscene", "threat", "insult", "identity_hate"]):
     output_df[f"pred_{col}"] = all_preds[:, i]
 
-output_path = "./results/inference_predictions.csv"
+output_path = os.path.join(RESULTS_DIR, "inference_predictions.csv")
 output_df.to_csv(output_path, index=False)
 print(f"✅ Saved predictions to {output_path}")

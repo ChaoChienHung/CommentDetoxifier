@@ -13,7 +13,7 @@ from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 
 from transformers import (
     BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments,
-    EarlyStoppingCallback, get_linear_schedule_with_warmup
+    EarlyStoppingCallback
 )
 
 # Debugging
@@ -25,11 +25,13 @@ data = pd.read_csv("data/train.csv")
 # Split into train and validation
 train_df, val_df = train_test_split(data, test_size=0.1, random_state=42)
 
+
+
 # Train Dataset
-train_dataset = CommentDataset(data=train_df, cache_path=f"{DATA_CACHE}/train_dataset.pt")
+train_dataset = CommentDataset(data=train_df, cache_path=os.path.join(DATA_CACHE, "train_dataset.pt"))
 
 # Validation Dataset
-val_dataset = CommentDataset(data=val_df, cache_path=f"{DATA_CACHE}/val_dataset.pt")
+val_dataset = CommentDataset(data=val_df, cache_path=os.path.join(DATA_CACHE, "val_dataset.pt"))
 
 # Create DataLoader
 train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
@@ -68,7 +70,7 @@ model = BertForSequenceClassification.from_pretrained(
 ).to(device)
 
 training_args = TrainingArguments(
-    output_dir=f"{RESULTS_DIR}/{CURRENT_TIME}",
+    output_dir=os.path.join(RESULTS_DIR, CURRENT_TIME),
     num_train_epochs=EPOCHS,
     per_device_train_batch_size=BATCH_SIZE_TRAIN,
     per_device_eval_batch_size=BATCH_SIZE_EVAL,

@@ -6,18 +6,19 @@ from pydantic import BaseModel, Field
 # -----------------
 # Directories
 # -----------------
-CACHE_DIR = "./cache"
-RESULTS_DIR = "./results"
-MODEL_CACHE = f"{CACHE_DIR}/models"
-DATA_CACHE = f"{CACHE_DIR}/datasets"
-TOKENIZER_CACHE = f"{CACHE_DIR}/tokenizers"
+CACHE_DIR = "cache"
+DATA_DIR = "data"
+RESULTS_DIR = "results"
+MODEL_CACHE = os.path.join(CACHE_DIR, "models")
+DATA_CACHE = os.path.join(CACHE_DIR, "datasets")
+TOKENIZER_CACHE = os.path.join(CACHE_DIR, "tokenizers")
 
 # -----------------
 # Model & Tokenizer
 # -----------------
 MODEL = "bert-base-uncased"
 TOKENIZER = "bert-base-uncased"
-MODEL_PATH = f"{RESULTS_DIR}/20251028-021857/checkpoint-35904"  # Best checkpoint folder
+MODEL_PATH = os.path.join(RESULTS_DIR, "20251028-021857", "checkpoint-35904")  # Best checkpoint folder
 
 # -----------------
 # Hyperparameters

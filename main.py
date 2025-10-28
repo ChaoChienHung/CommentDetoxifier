@@ -8,7 +8,7 @@ from typing import Literal
 from openai import OpenAI
 from transformers import BertTokenizer, BertForSequenceClassification
 
-from config import API_KEY, TOKENIZER, DEVICE, CACHE_DIR, MODEL, MODEL_PATH, THRESHOLD, LLMReply
+from config import TOKENIZER, DEVICE, CACHE_DIR, MODEL, MODEL_PATH, THRESHOLD, LLMReply
 
 # -----------------
 # OpenAI Agent
@@ -115,14 +115,17 @@ if __name__ == "__main__":
     print("🔹 Loading tokenizer and model...")
     print("-" * 40)
 
-    tokenizer = BertTokenizer.from_pretrained(TOKENIZER, cache_dir=f"{CACHE_DIR}/tokenizers")
+    
+
+    tokenizer = BertTokenizer.from_pretrained(TOKENIZER, cache_dir=os.path.join(CACHE_DIR, "tokenizers"))
     # If we have trained our model
     if os.path.exists(MODEL_PATH):
-        model = BertForSequenceClassification.from_pretrained(MODEL_PATH, cache_dir=f"{CACHE_DIR}/models")
+        model = BertForSequenceClassification.from_pretrained(MODEL_PATH, cache_dir=os.path.join(CACHE_DIR, "models"))
 
     # Else fallback to pretrained base model
     else:
-        model = BertForSequenceClassification.from_pretrained(MODEL, num_labels=6, problem_type="multi_label_classification", cache_dir=f"{CACHE_DIR}/models")
+        model = BertForSequenceClassification.from_pretrained(MODEL, num_labels=6, problem_type="multi_label_classification", cache_dir=os.path.join(CACHE_DIR, "models"))
+        
     model.to(DEVICE)
     model.eval()
 
