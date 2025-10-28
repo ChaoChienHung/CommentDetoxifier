@@ -63,7 +63,6 @@ print("-" * 30)
 
 all_preds = np.concatenate(all_preds, axis=0)
 all_labels = np.concatenate(all_labels, axis=0)
-
 precision, recall, f1, _ = precision_recall_fscore_support(all_labels, all_preds, average="samples")
 acc = accuracy_score(all_labels, all_preds)
 

@@ -8,7 +8,7 @@ from typing import Literal
 from openai import OpenAI
 from transformers import BertTokenizer, BertForSequenceClassification
 
-from config import API_KEY, TOKENIZER, DEVICE, CACHE_DIR, MODEL, THRESHOLD, LLMReply
+from config import API_KEY, TOKENIZER, DEVICE, CACHE_DIR, MODEL, MODEL_PATH, THRESHOLD, LLMReply
 
 # -----------------
 # OpenAI Agent
@@ -116,7 +116,13 @@ if __name__ == "__main__":
     print("-" * 40)
 
     tokenizer = BertTokenizer.from_pretrained(TOKENIZER, cache_dir=f"{CACHE_DIR}/tokenizers")
-    model = BertForSequenceClassification.from_pretrained(MODEL, num_labels=6, problem_type="multi_label_classification", cache_dir=f"{CACHE_DIR}/models")
+    # If we have trained our model
+    if os.path.exists(MODEL_PATH):
+        model = BertForSequenceClassification.from_pretrained(MODEL_PATH, cache_dir=f"{CACHE_DIR}/models")
+
+    # Else fallback to pretrained base model
+    else:
+        model = BertForSequenceClassification.from_pretrained(MODEL, num_labels=6, problem_type="multi_label_classification", cache_dir=f"{CACHE_DIR}/models")
     model.to(DEVICE)
     model.eval()
 
@@ -143,10 +149,11 @@ if __name__ == "__main__":
     # Inference Loop
     # -----------------
 
-    llm_reply: LLMReply = None
     counter: int = 0
+    shouldDetect: bool = True
+    llm_reply: LLMReply = LLMReply(success=True, has_meaning=True, error_message="", revised_comment=comment)
 
-    while True:
+    while shouldDetect:
         # -----------------
         # Detect toxicity
         # -----------------
@@ -160,17 +167,18 @@ if __name__ == "__main__":
             preds = (probs > THRESHOLD).astype(int)
 
         if not preds.any():
-            print("No toxic content detected.")
+            logger.info("The comment is socially acceptable.")
             break
 
+        logger.info(f"The comment: \"{comment}\" is detected to be toxic.")
         # -----------------
         # Detoxify with LLM
         # -----------------
         llm_reply = agent.detoxify(comment)
 
         if llm_reply.success:
-            logger.info(f"Original Comment: {comment}")
-            logger.info(f"OpenAI LLM Revised Comment: {llm_reply.revised_comment}")
+            logger.info(f"Original Comment: \"{comment}\"")
+            logger.info(f"OpenAI LLM Revised Comment: \"{llm_reply.revised_comment}\"")
             comment = llm_reply.revised_comment
 
         else:
