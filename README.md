@@ -36,13 +36,13 @@ CommentDetoxifier/
 
 ## Key Improvements
 1. Modularity
- * Extracted the OpenAI agent into agent.py.
- * Tokenizer/model loading, toxicity detection, and LLM detoxification separated clearly.
+   - Extracted the OpenAI agent into agent.py.
+   - Tokenizer/model loading, toxicity detection, and LLM detoxification separated clearly.
 2. Retry & Fallback Logic
- * `MAX_ATTEMPTS` ensures we don’t loop indefinitely.
- * LLM fallback handled gracefully.
+   - `MAX_ATTEMPTS` ensures we don’t loop indefinitely.
+   - LLM fallback handled gracefully.
 3. Logging
- * Logs all key events, including errors, toxic detection, and revised comments.
-4. User-Friendly
- * API key prompt hidden with getpass.
- * Clear feedback for socially acceptable or detoxified comments.
+   - Logs all key events, including errors, toxic detection, and revised comments.
+5. User-Friendly
+   - API key prompt hidden with getpass.
+   - Clear feedback for socially acceptable or detoxified comments.
