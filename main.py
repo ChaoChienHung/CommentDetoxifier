@@ -15,16 +15,28 @@ from config import TOKENIZER, DEVICE, CACHE_DIR, MODEL, MODEL_PATH, THRESHOLD, L
 # -----------------
 class Agent:
     """
-    Agent for converting toxic comments to socially acceptable comments.
+    Agent for converting toxic comments to socially acceptable comments
+    using OpenAI's LLM. If OpenAI API is unavailable, falls back gracefully.
     """
 
     def __init__(self, model: Literal["gpt-4o", "gpt-4o-mini"] = "gpt-4o-mini", max_retries: int = 3):
+        """
+        Initialize the Agent.
+
+        Args:
+            model: Name of the OpenAI model to use.
+            max_retries: Number of retries if request to OpenAI fails.
+        """
         self.client: OpenAI | None = None
         self.model: str = model
         self.max_retries: int = max_retries
         self._create_secure_openai_client()
 
     def _create_secure_openai_client(self):
+        """
+        Create a secure OpenAI client using the API key from environment variables.
+        Logs warning if no key is found.
+        """
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             logger.warning(
@@ -44,6 +56,12 @@ class Agent:
         """
         Convert a toxic comment to a socially acceptable version using OpenAI.
         Falls back to naive method if client unavailable.
+
+        Args:
+            comment: The input comment string.
+
+        Returns:
+            LLMReply object with revised comment and status.
         """
         if not self.client:
             logger.warning("No OpenAI client detected. Using naive fallback.")
@@ -57,10 +75,12 @@ class Agent:
         if not isinstance(comment, str):
             raise TypeError(f"Expected comment as string, got {type(comment)}")
 
+        # Define JSON schema for response validation
         schema = LLMReply.model_json_schema()
         schema["additionalProperties"] = False
         response_format_schema = {"name": "llm_reply", "schema": schema, "strict": True}
 
+        # Retry loop in case OpenAI API call fails
         for attempt in range(self.max_retries):
             try:
                 response = self.client.chat.completions.create(
@@ -79,6 +99,7 @@ class Agent:
                 )
 
                 try:
+                    # Validate and return the response as LLMReply
                     return LLMReply.model_validate_json(response.choices[0].message.content)
                 except Exception as e:
                     logger.error(f"Validation failed: {e}")
@@ -86,7 +107,7 @@ class Agent:
 
             except Exception as e:
                 logger.warning(f"Attempt {attempt + 1} failed: {e}")
-                time.sleep(2 ** attempt)
+                time.sleep(2 ** attempt)  # Exponential backoff
                 if attempt == self.max_retries - 1:
                     logger.error("All retries failed. Using fallback.")
                     return LLMReply(success=False, has_meaning=False, error_message=str(e), revised_comment=comment)
@@ -115,19 +136,23 @@ if __name__ == "__main__":
     print("🔹 Loading tokenizer and model...")
     print("-" * 40)
 
-    
-
+    # Load BERT tokenizer
     tokenizer = BertTokenizer.from_pretrained(TOKENIZER, cache_dir=os.path.join(CACHE_DIR, "tokenizers"))
-    # If we have trained our model
+
+    # Load trained BERT model if exists; otherwise, fallback to base model
     if os.path.exists(MODEL_PATH):
         model = BertForSequenceClassification.from_pretrained(MODEL_PATH, cache_dir=os.path.join(CACHE_DIR, "models"))
-
-    # Else fallback to pretrained base model
-    else:
-        model = BertForSequenceClassification.from_pretrained(MODEL, num_labels=6, problem_type="multi_label_classification", cache_dir=os.path.join(CACHE_DIR, "models"))
         
+    else:
+        model = BertForSequenceClassification.from_pretrained(
+            MODEL, 
+            num_labels=6, 
+            problem_type="multi_label_classification", 
+            cache_dir=os.path.join(CACHE_DIR, "models")
+        )
+
     model.to(DEVICE)
-    model.eval()
+    model.eval()  # Set model to evaluation mode
 
     # -----------------
     # Load OpenAI agent
@@ -140,25 +165,24 @@ if __name__ == "__main__":
     # -----------------
     # Prompt for API key if missing
     # -----------------
-
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
         api_key = getpass.getpass("Enter your OpenAI API key (will not be shown as you type): ")
         os.environ["OPENAI_API_KEY"] = api_key
 
+    # Prompt user for input comment
     comment: str = input("Please input the comment: ")
 
     # -----------------
     # Inference Loop
     # -----------------
-
-    counter: int = 0
+    counter: int = 0  # Track number of failed attempts
     shouldDetect: bool = True
     llm_reply: LLMReply = LLMReply(success=True, has_meaning=True, error_message="", revised_comment=comment)
 
     while shouldDetect:
         # -----------------
-        # Detect toxicity
+        # Detect toxicity using BERT
         # -----------------
         with torch.no_grad():
             encodings = tokenizer(comment, truncation=True, padding="max_length", return_tensors="pt")
@@ -169,13 +193,15 @@ if __name__ == "__main__":
             probs = torch.sigmoid(outputs.logits).cpu().numpy()
             preds = (probs > THRESHOLD).astype(int)
 
+        # If no toxic labels detected, stop the loop
         if not preds.any():
             logger.info("The comment is socially acceptable.")
             break
 
         logger.info(f"The comment: \"{comment}\" is detected to be toxic.")
+
         # -----------------
-        # Detoxify with LLM
+        # Detoxify with OpenAI LLM
         # -----------------
         llm_reply = agent.detoxify(comment)
 
@@ -188,6 +214,7 @@ if __name__ == "__main__":
             logger.error(llm_reply.error_message)
             counter += 1
 
+        # Stop after 3 failed attempts
         if counter == 3:
             break
 
@@ -202,8 +229,7 @@ if __name__ == "__main__":
         else:
             logger.info("This comment doesn't contain any meaningful content.")
             print("This comment doesn't contain any meaningful content.")
-
-
+            
     else:
         logger.error(f"Model's error: {llm_reply.error_message}")
         print(f"Model's error: {llm_reply.error_message}")
