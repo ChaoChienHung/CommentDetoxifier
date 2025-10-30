@@ -189,7 +189,8 @@ if __name__ == "__main__":
     id2lang = detector.config.id2label
     vals, idxs = torch.max(preds, dim=1)
     language_score = {id2lang[k.item()]: v.item() for k, v in zip(idxs, vals)}
-
+    comment = f'[{list(language_score.keys())[0]}] ' + comment
+    
     # -----------------
     # Inference Loop
     # -----------------
