@@ -20,6 +20,8 @@ MODEL = "bert-base-uncased"
 TOKENIZER = "bert-base-uncased"
 MODEL_PATH = os.path.join(RESULTS_DIR, "20251028-021857", "checkpoint-35904")  # Best checkpoint folder
 
+DETECTOR = "papluca/xlm-roberta-base-language-detection"
+
 # -----------------
 # Hyperparameters
 # -----------------

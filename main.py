@@ -6,9 +6,8 @@ import getpass
 from typing import Literal
 
 from openai import OpenAI
-from transformers import BertTokenizer, BertForSequenceClassification
-
-from config import TOKENIZER, DEVICE, CACHE_DIR, MODEL, MODEL_PATH, THRESHOLD, LLMReply
+from config import TOKENIZER, DEVICE, MODEL, MODEL_PATH, THRESHOLD, DETECTOR, MODEL_CACHE, TOKENIZER_CACHE, LLMReply
+from transformers import BertTokenizer, BertForSequenceClassification, AutoModelForSequenceClassification, AutoTokenizer
 
 # -----------------
 # OpenAI Agent
@@ -137,18 +136,18 @@ if __name__ == "__main__":
     print("-" * 40)
 
     # Load BERT tokenizer
-    tokenizer = BertTokenizer.from_pretrained(TOKENIZER, cache_dir=os.path.join(CACHE_DIR, "tokenizers"))
+    tokenizer = BertTokenizer.from_pretrained(TOKENIZER, cache_dir=os.path.join(TOKENIZER_CACHE, "toxic"))
 
     # Load trained BERT model if exists; otherwise, fallback to base model
     if os.path.exists(MODEL_PATH):
-        model = BertForSequenceClassification.from_pretrained(MODEL_PATH, cache_dir=os.path.join(CACHE_DIR, "models"))
+        model = BertForSequenceClassification.from_pretrained(MODEL_PATH, cache_dir=os.path.join(MODEL_CACHE, "toxic"))
         
     else:
         model = BertForSequenceClassification.from_pretrained(
             MODEL, 
             num_labels=6, 
             problem_type="multi_label_classification", 
-            cache_dir=os.path.join(CACHE_DIR, "models")
+            cache_dir=MODEL_CACHE
         )
 
     model.to(DEVICE)
@@ -172,6 +171,24 @@ if __name__ == "__main__":
 
     # Prompt user for input comment
     comment: str = input("Please input the comment: ")
+
+    # -------------------
+    # Language Detection
+    # -------------------
+    detector_tokenizer = AutoTokenizer.from_pretrained(DETECTOR, cache_dir=os.path.join(TOKENIZER_CACHE, "language"))
+    detector = AutoModelForSequenceClassification.from_pretrained(DETECTOR, cache_dir=os.path.join(MODEL_CACHE, "language"))
+
+    inputs = detector_tokenizer(comment, padding=True, truncation=True, return_tensors="pt")
+
+    with torch.no_grad():
+        logits = detector(**inputs).logits
+
+    preds = torch.softmax(logits, dim=-1)
+    
+    # Map raw predictions to languages
+    id2lang = detector.config.id2label
+    vals, idxs = torch.max(preds, dim=1)
+    language_score = {id2lang[k.item()]: v.item() for k, v in zip(idxs, vals)}
 
     # -----------------
     # Inference Loop
