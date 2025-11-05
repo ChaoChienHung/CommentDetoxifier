@@ -91,44 +91,49 @@ with torch.no_grad():
         all_labels.append(labels)
 
 # -----------------
-# METRICS
+# METRICS PER LABEL
 # -----------------
-print("-" * 30)
-print("🔹 Computing metrics...")
-print("-" * 30)
-
-metrics_path = os.path.join(RESULTS_DIR, "inference_metrics.csv")
+LABELS = ["toxic", "severe_toxic", "obscene", "threat", "insult", "identity_hate"]
+metrics_path = os.path.join(RESULTS_DIR, "inference_metrics_per_label.csv")
 
 if all_labels and all_labels[0] is not None:
     # Concatenate predictions and labels from all batches
     all_preds = np.concatenate(all_preds, axis=0)
     all_labels = np.concatenate(all_labels, axis=0)
 
-    # Calculate precision, recall, F1-score (sample-wise) and accuracy
-    precision, recall, f1, _ = precision_recall_fscore_support(
-        all_labels, all_preds, average="samples"
-    )
-    acc = accuracy_score(all_labels, all_preds)
+    # Initialize lists to store per-label metrics
+    per_label_results = []
 
-    # Store results in a dictionary
-    results = {
-        "accuracy": acc,
-        "precision": precision,
-        "recall": recall,
-        "f1": f1
-    }
+    # Loop over each label
+    for i, label_name in enumerate(LABELS):
+        label_true = all_labels[:, i]
+        label_pred = all_preds[:, i]
 
-    # Print evaluation metrics
-    print("📊 Evaluation Results:")
-    for k, v in results.items():
-        print(f"{k:>10}: {v:.4f}")
+        # Compute metrics for this label
+        precision, recall, f1, _ = precision_recall_fscore_support(
+            label_true, label_pred, average="binary"
+        )
+        acc = accuracy_score(label_true, label_pred)
 
-    # -----------------
-    # SAVE METRICS TO FILE
-    # -----------------
-    metrics_df = pd.DataFrame([results])
+        per_label_results.append({
+            "label": label_name,
+            "accuracy": acc,
+            "precision": precision,
+            "recall": recall,
+            "f1": f1
+        })
+
+        # Print metrics
+        print(f"📊 Metrics for '{label_name}':")
+        print(f"  Accuracy : {acc:.4f}")
+        print(f"  Precision: {precision:.4f}")
+        print(f"  Recall   : {recall:.4f}")
+        print(f"  F1       : {f1:.4f}\n")
+
+    # Save per-label metrics to CSV
+    metrics_df = pd.DataFrame(per_label_results)
     metrics_df.to_csv(metrics_path, index=False)
-    print(f"✅ Saved metrics to {metrics_path}")
+    print(f"✅ Saved per-label metrics to {metrics_path}")
 
 else:
     print("⚠️ No labels found — skipping metrics computation.")
