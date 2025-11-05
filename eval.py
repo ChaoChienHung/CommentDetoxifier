@@ -97,6 +97,7 @@ print("-" * 30)
 print("🔹 Computing metrics...")
 print("-" * 30)
 
+metrics_path = os.path.join(RESULTS_DIR, "inference_metrics.csv")
 
 if all_labels and all_labels[0] is not None:
     # Concatenate predictions and labels from all batches
@@ -122,22 +123,13 @@ if all_labels and all_labels[0] is not None:
     for k, v in results.items():
         print(f"{k:>10}: {v:.4f}")
 
+    # -----------------
+    # SAVE METRICS TO FILE
+    # -----------------
+    metrics_df = pd.DataFrame([results])
+    metrics_df.to_csv(metrics_path, index=False)
+    print(f"✅ Saved metrics to {metrics_path}")
+
 else:
     print("⚠️ No labels found — skipping metrics computation.")
     all_preds = np.concatenate(all_preds, axis=0)
-
-# ---------------------------
-# OPTIONAL: SAVE PREDICTIONS
-# ---------------------------
-
-# Copy original test data
-output_df = test_data.copy()
-
-# Add model predictions for each toxicity category
-for i, col in enumerate(["toxic", "severe_toxic", "obscene", "threat", "insult", "identity_hate"]):
-    output_df[f"pred_{col}"] = all_preds[:, i]
-
-# Save predictions to CSV
-output_path = os.path.join(RESULTS_DIR, "inference_predictions.csv")
-output_df.to_csv(output_path, index=False)
-print(f"✅ Saved predictions to {output_path}")
