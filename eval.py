@@ -2,10 +2,16 @@ import os
 import torch
 import numpy as np
 import pandas as pd
+from config import *
 from dataset import CommentDataset
 from transformers import BertTokenizer, BertForSequenceClassification
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from config import DATA_CACHE, TOKENIZER, DEVICE, THRESHOLD, BATCH_SIZE_EVAL, CACHE_DIR, MODEL_PATH, RESULTS_DIR, DATA_DIR
+
+# ------------------------
+# Ensure Directories Exist
+# ------------------------
+os.makedirs(RESULTS_DIR, exist_ok=True)
+os.makedirs(DATA_CACHE, exist_ok=True)
 
 # ------------------------
 # LOAD MODEL & TOKENIZER
@@ -15,16 +21,10 @@ print("🔹 Loading tokenizer and model...")
 print("-" * 38)
 
 # Load pre-trained BERT tokenizer
-tokenizer = BertTokenizer.from_pretrained(
-    TOKENIZER, 
-    cache_dir=os.path.join(CACHE_DIR, "tokenizers")
-)
+tokenizer = BertTokenizer.from_pretrained(MODEL_PATH)
 
 # Load trained BERT model for multi-label classification
-model = BertForSequenceClassification.from_pretrained(
-    MODEL_PATH, 
-    cache_dir=os.path.join(CACHE_DIR, "models")
-)
+model = BertForSequenceClassification.from_pretrained(MODEL_PATH)
 
 # Move model to specified device (GPU/CPU) and set to evaluation mode
 model.to(DEVICE)
@@ -70,7 +70,11 @@ with torch.no_grad():
         # Move input tensors to the device
         input_ids = batch["input_ids"].to(DEVICE)
         attention_mask = batch["attention_mask"].to(DEVICE)
-        labels = batch["labels"].cpu().numpy()  # move labels to CPU for metric calculation
+        labels = batch.get("labels")
+        if labels is not None:
+            labels = labels.cpu().numpy()
+        else:
+            labels = None
 
         # Forward pass through the model
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
@@ -92,28 +96,34 @@ print("-" * 30)
 print("🔹 Computing metrics...")
 print("-" * 30)
 
-# Concatenate predictions and labels from all batches
-all_preds = np.concatenate(all_preds, axis=0)
-all_labels = np.concatenate(all_labels, axis=0)
 
-# Calculate precision, recall, F1-score (sample-wise) and accuracy
-precision, recall, f1, _ = precision_recall_fscore_support(
-    all_labels, all_preds, average="samples"
-)
-acc = accuracy_score(all_labels, all_preds)
+if all_labels and all_labels[0] is not None:
+    # Concatenate predictions and labels from all batches
+    all_preds = np.concatenate(all_preds, axis=0)
+    all_labels = np.concatenate(all_labels, axis=0)
 
-# Store results in a dictionary
-results = {
-    "accuracy": acc,
-    "precision": precision,
-    "recall": recall,
-    "f1": f1
-}
+    # Calculate precision, recall, F1-score (sample-wise) and accuracy
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        all_labels, all_preds, average="samples"
+    )
+    acc = accuracy_score(all_labels, all_preds)
 
-# Print evaluation metrics
-print("📊 Evaluation Results:")
-for k, v in results.items():
-    print(f"{k:>10}: {v:.4f}")
+    # Store results in a dictionary
+    results = {
+        "accuracy": acc,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1
+    }
+
+    # Print evaluation metrics
+    print("📊 Evaluation Results:")
+    for k, v in results.items():
+        print(f"{k:>10}: {v:.4f}")
+        
+else:
+    print("⚠️ No labels found — skipping metrics computation.")
+    all_preds = np.concatenate(all_preds, axis=0)
 
 # ---------------------------
 # OPTIONAL: SAVE PREDICTIONS

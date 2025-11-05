@@ -40,6 +40,9 @@ os.makedirs(DATA_CACHE, exist_ok=True)
 os.makedirs(MODEL_CACHE, exist_ok=True)
 os.makedirs(TOKENIZER_CACHE, exist_ok=True)
 
+os.makedirs(BERT_CACHE, exist_ok=True)
+
+
 # -----------------
 # W&B Setup
 # -----------------
@@ -66,11 +69,11 @@ tokenizer = BertTokenizer.from_pretrained(MODEL, cache_dir=TOKENIZER_CACHE)
 # Model Setup
 # -----------------
 model = BertForSequenceClassification.from_pretrained(
-    MODEL, num_labels=6, problem_type="multi_label_classification", cache_dir=MODEL_CACHE
+    MODEL, num_labels=6, problem_type="multi_label_classification", cache_dir=BERT_CACHE
 ).to(device)
 
 training_args = TrainingArguments(
-    output_dir=os.path.join(RESULTS_DIR, CURRENT_TIME),
+    output_dir=os.path.join(BERT_CACHE, CURRENT_TIME),
     num_train_epochs=EPOCHS,
     per_device_train_batch_size=BATCH_SIZE_TRAIN,
     per_device_eval_batch_size=BATCH_SIZE_EVAL,

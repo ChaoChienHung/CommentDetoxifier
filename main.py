@@ -5,8 +5,8 @@ import logging
 import getpass
 from typing import Literal
 
+from config import *
 from openai import OpenAI
-from config import TOKENIZER, DEVICE, MODEL, MODEL_PATH, THRESHOLD, DETECTOR, MODEL_CACHE, TOKENIZER_CACHE, LLMReply
 from transformers import BertTokenizer, BertForSequenceClassification, AutoModelForSequenceClassification, AutoTokenizer
 
 # -----------------
@@ -135,19 +135,20 @@ if __name__ == "__main__":
     print("🔹 Loading tokenizer and model...")
     print("-" * 40)
 
-    # Load BERT tokenizer
-    tokenizer = BertTokenizer.from_pretrained(TOKENIZER, cache_dir=os.path.join(TOKENIZER_CACHE, "toxic"))
 
     # Load trained BERT model if exists; otherwise, fallback to base model
     if os.path.exists(MODEL_PATH):
-        model = BertForSequenceClassification.from_pretrained(MODEL_PATH, cache_dir=os.path.join(MODEL_CACHE, "toxic"))
+        tokenizer = BertTokenizer.from_pretrained(MODEL_PATH)
+        model = BertForSequenceClassification.from_pretrained(MODEL_PATH)
         
     else:
+        # Load BERT tokenizer
+        tokenizer = BertTokenizer.from_pretrained(TOKENIZER, cache_dir=os.path.join(TOKENIZER_CACHE, "toxic"))
         model = BertForSequenceClassification.from_pretrained(
-            MODEL, 
+            MODEL,
             num_labels=6, 
             problem_type="multi_label_classification", 
-            cache_dir=MODEL_CACHE
+            cache_dir=BERT_CACHE
         )
 
     model.to(DEVICE)
