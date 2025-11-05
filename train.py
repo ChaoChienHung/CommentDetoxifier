@@ -28,15 +28,14 @@ train_df, val_df = train_test_split(data, test_size=0.1, random_state=42)
 
 
 # Train Dataset
-train_dataset = CommentDataset(data=train_df, cache_path=os.path.join(DATA_CACHE, "train_dataset.pt"))
+train_dataset = CommentDataset(data=train_df, tokenizer_name=TOKENIZER, tokenizer_cache=BERT_TOKENIZER_CACHE, cache_data=os.path.join(DATA_CACHE, "train_dataset.pt"))
 
 # Validation Dataset
-val_dataset = CommentDataset(data=val_df, cache_path=os.path.join(DATA_CACHE, "val_dataset.pt"))
+val_dataset = CommentDataset(data=val_df, tokenizer_name=TOKENIZER, tokenizer_cache=BERT_TOKENIZER_CACHE, cache_data=os.path.join(DATA_CACHE, "val_dataset.pt"))
 
 # Create DataLoader
 train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
 
-os.makedirs(DATA_CACHE, exist_ok=True)
 os.makedirs(MODEL_CACHE, exist_ok=True)
 os.makedirs(TOKENIZER_CACHE, exist_ok=True)
 
@@ -63,7 +62,7 @@ print(f"Training device: {device}")
 # -----------------
 # Tokenizer
 # -----------------
-tokenizer = BertTokenizer.from_pretrained(MODEL, cache_dir=TOKENIZER_CACHE)
+tokenizer = BertTokenizer.from_pretrained(MODEL, cache_dir=BERT_TOKENIZER_CACHE)
 
 # -----------------
 # Model Setup

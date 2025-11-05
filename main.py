@@ -143,7 +143,7 @@ if __name__ == "__main__":
         
     else:
         # Load BERT tokenizer
-        tokenizer = BertTokenizer.from_pretrained(TOKENIZER, cache_dir=os.path.join(TOKENIZER_CACHE, "toxic"))
+        tokenizer = BertTokenizer.from_pretrained(TOKENIZER, cache_dir=BERT_TOKENIZER_CACHE)
         model = BertForSequenceClassification.from_pretrained(
             MODEL,
             num_labels=6, 
@@ -176,8 +176,8 @@ if __name__ == "__main__":
     # -------------------
     # Language Detection
     # -------------------
-    detector_tokenizer = AutoTokenizer.from_pretrained(DETECTOR, cache_dir=os.path.join(TOKENIZER_CACHE, "language"))
-    detector = AutoModelForSequenceClassification.from_pretrained(DETECTOR, cache_dir=os.path.join(MODEL_CACHE, "language"))
+    detector_tokenizer = AutoTokenizer.from_pretrained(DETECTOR, cache_dir=ROBERTA_TOKENIZER_CACHE)
+    detector = AutoModelForSequenceClassification.from_pretrained(DETECTOR, cache_dir=ROBERTA_CACHE)
 
     inputs = detector_tokenizer(comment, padding=True, truncation=True, return_tensors="pt")
 

@@ -44,7 +44,8 @@ test_data = pd.read_csv(os.path.join(DATA_DIR, "test.csv"))
 test_dataset = CommentDataset(
     data=test_data,
     tokenizer_name=TOKENIZER,
-    cache_path=os.path.join(DATA_CACHE, "test_dataset.pt")  # optional caching for faster reload
+    tokenizer_cache=BERT_TOKENIZER_CACHE,
+    cache_data=os.path.join(DATA_CACHE, "test_dataset.pt")  # optional caching for faster reload
 )
 
 # Create a DataLoader for batching during inference
@@ -120,7 +121,7 @@ if all_labels and all_labels[0] is not None:
     print("📊 Evaluation Results:")
     for k, v in results.items():
         print(f"{k:>10}: {v:.4f}")
-        
+
 else:
     print("⚠️ No labels found — skipping metrics computation.")
     all_preds = np.concatenate(all_preds, axis=0)

@@ -14,13 +14,16 @@ DATA_CACHE = os.path.join(CACHE_DIR, "datasets")
 TOKENIZER_CACHE = os.path.join(CACHE_DIR, "tokenizers")
 
 # -------------------------------
-# Language Detector Directories
+# XLM Roberta Language Detection
 # -------------------------------
+ROBERTA_CACHE = os.path.join(MODEL_CACHE, "language", "XLM-Roberta")
+ROBERTA_TOKENIZER_CACHE = os.path.join(TOKENIZER_CACHE, "language", "XLM-Roberta")
 
 # -------------------------------
-# Toxicity Detector Directories
+# Bert Directories
 # -------------------------------
-BERT_CACHE = os.path.join(MODEL_CACHE, "language", "Bert")
+BERT_CACHE = os.path.join(MODEL_CACHE, "toxic", "Bert")
+BERT_TOKENIZER_CACHE = os.path.join(TOKENIZER_CACHE, "toxic", "Bert")
 
 # -----------------
 # Model & Tokenizer

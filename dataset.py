@@ -12,20 +12,21 @@ class CommentDataset(Dataset):
     Args:
         data (pd.DataFrame): The data containing comment_text and label columns.
         tokenizer_name (str): Hugging Face tokenizer name or path.
-        cache_path (str, optional): Path to save/load preprocessed dataset.
+        cache_data (str, optional): Path to save/load preprocessed dataset.
         max_length (int): Max token length for tokenizer.
     """
-    def __init__(self, data, tokenizer_name=MODEL, cache_path=None, max_length=128):
+    def __init__(self, data, tokenizer_name=MODEL, tokenizer_cache=os.path.join(TOKENIZER_CACHE, "toxic", "Miscellaneous"), cache_data=None, max_length=128):
         self.data = data.reset_index(drop=True)
         self.max_length = max_length
         self.tokenizer_name = tokenizer_name
-        self.cache_path = cache_path
+        self.cache_data = cache_data
+        self.tokenizer_cache = tokenizer_cache
 
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, cache_dir=TOKENIZER_CACHE)
+        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, cache_dir=self.tokenizer_cache)
 
-        if cache_path and os.path.exists(cache_path):
-            print(f"Loading cached dataset from {cache_path}")
-            cached = torch.load(cache_path)
+        if cache_data and os.path.exists(cache_data):
+            print(f"Loading cached dataset from {cache_data}")
+            cached = torch.load(cache_data)
             self.encodings = cached["encodings"]
             self.labels = cached["labels"]
 
@@ -45,10 +46,10 @@ class CommentDataset(Dataset):
                 dtype=torch.float
             )
 
-            if cache_path:
-                os.makedirs(os.path.dirname(cache_path), exist_ok=True)
-                torch.save({"encodings": self.encodings, "labels": self.labels}, cache_path)
-                print(f"✅ Saved tokenized dataset to {cache_path}")
+            if cache_data:
+                os.makedirs(os.path.dirname(cache_data), exist_ok=True)
+                torch.save({"encodings": self.encodings, "labels": self.labels}, cache_data)
+                print(f"✅ Saved tokenized dataset to {cache_data}")
 
     def __len__(self):
         return len(self.labels)
