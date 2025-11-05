@@ -30,7 +30,7 @@ BERT_TOKENIZER_CACHE = os.path.join(TOKENIZER_CACHE, "toxic", "Bert")
 # -----------------
 MODEL = "bert-base-uncased"
 TOKENIZER = "bert-base-uncased"
-MODEL_PATH = os.path.join(BERT_CACHE, "20251028-021857", "checkpoint-35904")  # Best checkpoint folder
+MODEL_PATH = os.path.join(BERT_CACHE, "20251028-021857", "checkpoints", "checkpoint-35904")  # Best checkpoint folder
 
 DETECTOR = "papluca/xlm-roberta-base-language-detection"
 

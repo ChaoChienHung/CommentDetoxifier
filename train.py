@@ -72,13 +72,14 @@ model = BertForSequenceClassification.from_pretrained(
 ).to(device)
 
 training_args = TrainingArguments(
-    output_dir=os.path.join(BERT_CACHE, CURRENT_TIME),
+    output_dir=os.path.join(BERT_CACHE, CURRENT_TIME, "checkpoints"),
     num_train_epochs=EPOCHS,
     per_device_train_batch_size=BATCH_SIZE_TRAIN,
     per_device_eval_batch_size=BATCH_SIZE_EVAL,
     eval_strategy="epoch",
     save_strategy="epoch",
     logging_steps=10,
+    save_total_limit=2,
     load_best_model_at_end=True,  # optional but recommended with early stopping
     metric_for_best_model="f1",   
     greater_is_better=True        # True if higher metric is better
@@ -103,3 +104,4 @@ trainer = Trainer(
 )
 
 trainer.train()
+trainer.save_model(os.path.join(BERT_CACHE, CURRENT_TIME, "best"))
