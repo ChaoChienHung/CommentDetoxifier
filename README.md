@@ -7,11 +7,9 @@
 CommentDetoxifier/
 ├── config.py               # Project constants, hyperparameters, paths, device setup
 ├── dataset.py              # Custom PyTorch Dataset for multi-label toxicity detection
-├── model.py                # BERT-based toxicity classifier architecture
 ├── train.py                # Script to train the BERT classifier with multi-label output
 ├── eval.py                 # Evaluate the model on a test dataset
 ├── main.py                 # Main inference & detoxification pipeline
-├── agent.py                # OpenAI LLM agent for detoxifying toxic comments
 ├── requirements.txt        # Python dependencies
 └── README.md               # Project overview and usage instructions
 ```
