@@ -88,7 +88,7 @@ training_args = TrainingArguments(
 def compute_metrics(pred):
     logits = torch.tensor(pred.predictions)
     labels = torch.tensor(pred.label_ids)
-    preds = torch.sigmoid(logits) > 0.5
+    preds = torch.sigmoid(logits) > THRESHOLD
     precision, recall, f1, _ = precision_recall_fscore_support(labels, preds, average='samples')
     acc = accuracy_score(labels, preds)
     return {"accuracy": acc, "f1": f1, "precision": precision, "recall": recall}
